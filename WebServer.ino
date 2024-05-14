@@ -26,6 +26,7 @@ LiquidCrystal lcd(25, 26, 33, 32, 14, 27); //Define os pinos do display lcd
 
 const char *ssid = "Lips";
 const char *password = "sala3086";
+const char *senha = "3086";
 
 WebServer server(80);
 
@@ -44,7 +45,15 @@ bool procurarID(String &identificador) {      // Funcao que procura um identific
   return false;
 }
 
+bool verificarCredenciais(const String &usuario, const String &senha) {
+  return (usuario == "Lips" && senha == "3086");    // Verifique se o usuário e a senha correspondem aos credenciais desejados
+}
+
 void handleRoot() {   // Configura a rota principal "/"
+
+  if (!server.authenticate(ssid, senha)) {
+    return server.requestAuthentication();
+  }
 
   String script = "<script>document.getElementById('identificacao').value = '" + conteudo + "';</script>";
 
@@ -79,6 +88,10 @@ void handleRoot() {   // Configura a rota principal "/"
 
 void handleIdentifiers() {  // Configura a rota para ver cadastros "/identificadores"
 
+  if (!server.authenticate(ssid, senha)) {
+    return server.requestAuthentication();
+  }
+
   String message = "<html>\
   <head>\
     <title>Identification Numbers</title>\
@@ -105,6 +118,10 @@ void handleIdentifiers() {  // Configura a rota para ver cadastros "/identificad
 }
 
 void handleRemover() {    // Configura a rota para deletar cadastros "/remover"
+
+  if (!server.authenticate(ssid, senha)) {
+    return server.requestAuthentication();
+  }
 
   String script = "<script>document.getElementById('removedor').value = '" + conteudo + "';</script>";
   String message = "<html>\
@@ -296,7 +313,8 @@ void readRFID(void) {   // Funcao de leitura do cartao no RFID
   printHex(rfid.uid.uidByte, rfid.uid.size);
   Serial.println();
   conteudoAcesso = conteudo;
-  conteudoAcesso.trim();   
+  conteudoAcesso.trim();
+
 
   if(procurarID(conteudoAcesso)) {    // Verifica se o acesso foi permitido
     lcd.clear();
