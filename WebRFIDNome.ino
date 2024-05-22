@@ -19,8 +19,8 @@ MFRC522::MIFARE_Key key;                  // Esse objeto 'chave' é utilizado pa
 MFRC522::StatusCode status;               // Código de status de retorno da autenticação
 MFRC522 rfid = MFRC522(SS_PIN, RST_PIN);  // Definicoes pino modulo RC522
 
-String conteudo = "";        // Variável global para armazenar o ID RFID lido
-String conteudoAcesso = "";  // Variável global para armazenar o ID RFID lido e controlar acesso
+String conteudo = "";        // Variável global para armazenar o ID RFID lido e manda-lo para o site 
+String conteudoAcesso = "";  // Variável global para armazenar o ID RFID lido e controlar o acesso
 
 LiquidCrystal lcd(25, 26, 33, 32, 14, 27);  //Define os pinos do display lcd
 
@@ -31,14 +31,13 @@ const char *senha = "3086";
 WebServer server(80);
 
 const int solenoide = 15;  // Definicao do pino do solenoide
-const int led2 = 2;
 
 bool numeroProcessado = false;              // Verifica se o indentificar foi processado na requisicao HTTP
 std::vector<String> identificationNumbers;  // Vetor de strings para armazenar os números de identificação
 
 void handleRoot() {  // Configura a rota principal "/"
 
-  if (!server.authenticate(ssid, senha)) {
+  if (!server.authenticate(ssid, senha)) {    // Cria a autenticacao para o site 
     return server.requestAuthentication();
   }
 
@@ -67,7 +66,7 @@ void handleRoot() {  // Configura a rota principal "/"
     <a href='/remover'><button>Remover Identificador</button></a>\
     </body></html>";
 
-  message += script;
+  message += script;    // Manda para a pagina o ID lido
   conteudo = "";
   numeroProcessado = false;
 
@@ -77,7 +76,7 @@ void handleRoot() {  // Configura a rota principal "/"
 
 void handleIdentifiers() {  // Configura a rota para ver cadastros "/identificadores"
 
-  if (!server.authenticate(ssid, senha)) {
+  if (!server.authenticate(ssid, senha)) {    // Cria a autenticacao para o site 
     return server.requestAuthentication();
   }
 
@@ -108,7 +107,7 @@ void handleIdentifiers() {  // Configura a rota para ver cadastros "/identificad
 
 void handleRemover() {  // Configura a rota para deletar cadastros "/remover"
 
-  if (!server.authenticate(ssid, senha)) {
+  if (!server.authenticate(ssid, senha)) {    // Cria a autenticacao para o site 
     return server.requestAuthentication();
   }
 
@@ -131,14 +130,14 @@ void handleRemover() {  // Configura a rota para deletar cadastros "/remover"
   message += "<a href='/'><button>Voltar</button></a>";
   message += "</ul></body></html>";
 
-  message += script;
+  message += script;    // Manda para a pagina o ID lido
   conteudo = "";
   numeroProcessado = false;
 
   server.send(200, "text/html", message);
 }
 
-void handleNotFound() {
+void handleNotFound() {     // Configura a rota desconhecida
   String message = "File Not Found\n\n";
   message += "URI: ";
   message += server.uri();
@@ -162,7 +161,7 @@ void carregarIdentificadoresFromSPIFFS() {  // Carrega os identificadores da mem
       String identificadores = file.readStringUntil('\n');
       identificadores.trim();            // Remove espaços em branco extras
       if (!identificadores.isEmpty()) {  // Verifica se a linha não está vazia
-        identificationNumbers.push_back(identificadores);
+        identificationNumbers.push_back(identificadores);   // Adiciona os identificadores na lista
       }
     }
     file.close();
@@ -182,7 +181,7 @@ void salvarIdentificadoresToSPIFFS(const String &identifier) {  // Salva os iden
 }
 
 void removerIdentificador(const String &identifier) {  // Remove um identificador da memoria flash
-  String identificador = "";
+  String identificador = identifier;
   String nome = "";
   String identif = "";
   for (int k = 0; k < identificationNumbers.size() + 1; k++) {
@@ -197,9 +196,7 @@ void removerIdentificador(const String &identifier) {  // Remove um identificado
     }
     if (identifier == identif) {
       identificador = nome + "," + identif;
-    } else {
-      identificador = identifier;
-    }
+    } 
   }
 
   auto it = std::find(identificationNumbers.begin(), identificationNumbers.end(), identificador);  // Procura o identificador no vetor
@@ -226,7 +223,6 @@ void removerIdentificador(const String &identifier) {  // Remove um identificado
 void setup(void) {
   pinMode(solenoide, OUTPUT);
   digitalWrite(solenoide, HIGH);
-  pinMode(led2, OUTPUT);
   lcd.begin(16, 2);
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
@@ -259,7 +255,7 @@ void setup(void) {
   // Carrega os identificadores do arquivo, se existir
   carregarIdentificadoresFromSPIFFS();
 
-  server.on("/", handleRoot);
+  server.on("/", handleRoot);     // Rota principal
   server.on("/identificadores", handleIdentifiers);  // Rota para exibir os identificadores
   server.on("/remover", handleRemover);              // Rota para remover os identificadores
   server.onNotFound(handleNotFound);
@@ -272,6 +268,7 @@ void loop(void) {
   lcd.print(F("Acesso ao LIPS"));
   lcd.setCursor(0, 1);
   lcd.print(F("Aprox. o cartao"));
+
   server.handleClient();
   readRFID();
 
@@ -338,11 +335,7 @@ void readRFID(void) {  // Funcao de leitura do cartao no RFID
   if (procurarID(conteudoAcesso)) {  // Verifica se o acesso foi permitido
     lcd.clear();
     Serial.println("Acesso permitido");
-    printNome(conteudoAcesso);
-    //lcd.setCursor(0, 0);
-    //lcd.print(F("Acesso permitido"));
-    //lcd.setCursor(0, 1);
-    //lcd.print(F("Bem vindo!"));
+    printNome(conteudoAcesso);    // Printa o nome no lcd
     delay(1000);
     digitalWrite(solenoide, LOW);  // Ativa o solenoide para abrir a tranca
     delay(70);
