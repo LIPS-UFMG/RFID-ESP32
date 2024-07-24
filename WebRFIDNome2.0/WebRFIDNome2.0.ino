@@ -22,7 +22,7 @@ MFRC522 rfid = MFRC522(SS_PIN, RST_PIN);  // Definicoes pino modulo RC522
 String conteudo = "";        // Variável global para armazenar o ID RFID lido
 String conteudoAcesso = "";  // Variável global para armazenar o ID RFID lido e controlar acesso
 
-LiquidCrystal lcd(25, 26, 33, 32, 14, 27);  //Define os pinos do display lcd
+LiquidCrystal lcd(25, 27, 33, 32, 14, 27);  //Define os pinos do display lcd
 
 const char *ssid = "Lips";
 const char *password = "sala3086";
