@@ -92,7 +92,7 @@ void handleIdentifiers() {  // Configura a rota para ver cadastros "/identificad
     <ul>";
 
   // Adiciona cada número de identificação à lista HTML
-  for (int i = 0; i < identificationNumbers.size() + 1; i++) {
+  for (int i = 0; i < identificationNumbers.size(); i++) {
     message += "<li>" + identificationNumbers[i] + "</li>";
   }
   message += "</br>";
@@ -344,7 +344,7 @@ void printHex(byte *buffer, byte bufferSize) {  // Funcao que imprime o identifi
 bool procurarID(String &identificador) {  // Funcao que procura um identificador no armazenamento
   String nomeP = "";
   String identif = "";
-  for (int h = 0; h < identificationNumbers.size() + 1; h++) {
+  for (int h = 0; h < identificationNumbers.size(); h++) {
     int pos1 = identificationNumbers[h].indexOf(',');  // Procura o caractere de separacao
     if (pos1 != -1) {                                  // Separa a identificacao em nome e numero de id
       // A primeira parte é do início até a posição da vírgula
